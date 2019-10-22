@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { TaskStatus } from './task.status-enum';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -11,24 +14,21 @@ export class TasksService {
   ) {
   }
 
-  // private tasks: Task[] = [];
-  //
-  // getAllTasks(): Task[] {
-  //   return this.tasks;
-  // }
-  //
-  // createTask(createTaskDto: CreateTaskDto) {
-  //   const { title, description } = createTaskDto;
-  //   const task: Task = {
-  //     id: uuid(),
-  //     title,
-  //     description,
-  //     status: TaskStatus.OPEN,
-  //   };
-  //
-  //   this.tasks.push(task);
-  //   return task;
-  // }
+  async getAllTasks(): Promise<Task[]> {
+    return await this.taskRepository.find();
+  }
+
+  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+    const { title, description } = createTaskDto;
+    const task = new Task();
+
+    task.title = title;
+    task.description = description;
+    task.status = TaskStatus.OPEN;
+
+    await task.save();
+    return task;
+  }
 
   async getTaskById(id: number): Promise<Task> {
     const data = await this.taskRepository.findOne(id);
@@ -41,21 +41,21 @@ export class TasksService {
   }
 
 
-  //
-  // patchTaskById(id: string, updateTaskDto: UpdateTaskDto): Task {
-  //   if (!TaskStatus[updateTaskDto.status]) {
-  //     delete updateTaskDto.status;
-  //   }
-  //
-  //   const data = this.getTaskById(id);
-  //   const indexTask = this.tasks.findIndex(task => task.id === data.id);
-  //   this.tasks[indexTask] = { ...this.tasks[indexTask], ...updateTaskDto } as Task;
-  //   return this.tasks[indexTask];
-  // }
-  //
-  // deleteTaskById(id: string) {
-  //   const data = this.getTaskById(id);
-  //   this.tasks = this.tasks.filter(task => task.id !== data.id);
-  //   return true;
-  // }
+  async patchTaskById(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    if (!TaskStatus[updateTaskDto.status]) {
+      delete updateTaskDto.status;
+    }
+
+    const data = await this.getTaskById(id);
+
+    const updated = { ...data, ...updateTaskDto };
+
+    return this.taskRepository.save(updated);
+  }
+
+  async deleteTaskById(id: number) {
+    const data = await this.getTaskById(id);
+
+    return await this.taskRepository.delete(data);
+  }
 }

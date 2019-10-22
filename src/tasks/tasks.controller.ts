@@ -20,32 +20,34 @@ export class TasksController {
   constructor(private taskService: TasksService) {
   }
 
-  // @Get()
-  // getAllTasks(): Task[] {
-  //   return this.taskService.getAllTasks();
-  // }
-  //
-  // @Post()
-  // @UsePipes(ValidationPipe)
-  // postTask(@Body() createTaskDto: CreateTaskDto) {
-  //   return this.taskService.createTask(createTaskDto);
-  // }
+  @Get()
+  async getAllTasks(): Promise<Task[]> {
+    return await this.taskService.getAllTasks();
+  }
+
+  @Post()
+  @UsePipes(ValidationPipe)
+  async postTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    return await this.taskService.createTask(createTaskDto);
+  }
+
   //
   @Get('/:id')
   async getTask(@Param('id', ParseIntPipe) id: number): Promise<Task> {
     return await this.taskService.getTaskById(id);
   }
+
   //
-  // @Patch('/:id')
-  // patchTask(
-  //   @Param('id') id: string,
-  //   @Body() updateTaskDto: UpdateTaskDto,
-  // ) {
-  //   return this.taskService.patchTaskById(id, updateTaskDto);
-  // }
-  //
-  // @Delete('/:id')
-  // deleteTask(@Param('id') id: string) {
-  //   return this.taskService.deleteTaskById(id);
-  // }
+  @Patch('/:id')
+  async patchTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    return await this.taskService.patchTaskById(id, updateTaskDto);
+  }
+
+  @Delete('/:id')
+  async deleteTask(@Param('id', ParseIntPipe) id: number) {
+    return await this.taskService.deleteTaskById(id);
+  }
 }
